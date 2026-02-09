@@ -8,18 +8,29 @@ jobs:
 
     permissions:
       contents: write
-      
+
     steps:
-      - name: Clone repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: download
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install yt-dlp
         run: |
-          git config --local user.email "justjavac@gmail.com"
-          git config --local user.name "迷渡"
-          git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          git pull --rebase
-          ./bin/youtube-dl --config-location config.txt
+          python -m pip install --upgrade pip
+          pip install -U yt-dlp
+
+      - name: Download videos
+        run: |
+          yt-dlp -a playlist.txt
+
+      - name: Commit downloaded files
+        run: |
+          git config user.email "justjavac@gmail.com"
+          git config user.name "迷渡"
           git add .
-          git commit -m "download youtube video"
+          git commit -m "download youtube video" || echo "Nothing to commit"
           git push
